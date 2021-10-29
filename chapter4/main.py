@@ -8,15 +8,19 @@ import numpy as np
 import time
 import datetime
 import missingno as msno
-import warnings
-warnings.filterwarnings("ignore") ##忽略警告
+
 import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.rcParams['font.sans-serif']=['SimHei']   # 用黑体显示中文
 matplotlib.rcParams['axes.unicode_minus']=False     # 正常显示负号
+
+import warnings
+warnings.filterwarnings("ignore") ##忽略警告
+
 ##数据读取
 def data_read(data_path,file_name):
-    df = pd.read_csv( os.path.join(data_path, file_name), delim_whitespace = True, header = None )
+
+    df = pd.read_csv(os.path.join(data_path, file_name), delim_whitespace = True, header = None )
     ##变量重命名
     columns = ['status_account','duration','credit_history','purpose', 'amount',
                'svaing_account', 'present_emp', 'income_rate', 'personal_status',
@@ -27,8 +31,10 @@ def data_read(data_path,file_name):
     ##将标签变量由状态1,2转为0,1;0表示好用户，1表示坏用户
     df.target = df.target - 1
     return df
+
 ##离散变量与连续变量区分   
 def category_continue_separation(df,feature_names):
+
     categorical_var = []
     numerical_var = []
     if 'target' in feature_names:
@@ -37,11 +43,15 @@ def category_continue_separation(df,feature_names):
     numerical_var = list(df[feature_names].select_dtypes(include=['int','float','int32','float32','int64','float64']).columns.values)
     categorical_var = [x for x in feature_names if x not in numerical_var]
     return categorical_var,numerical_var
+
 def add_str(x):
+
     str_1 = ['%',' ','/t','$',';','@']
     str_2 = str_1[np.random.randint( 0,high = len(str_1)-1 )]
     return x+str_2
+
 def add_time(num,style="%Y-%m-%d"):
+
     start_time = time.mktime((2010,1,1,0,0,0,0,0,0) )    
     stop_time = time.mktime((2015,1,1,0,0,0,0,0,0) )  
     re_time = []
@@ -51,11 +61,14 @@ def add_time(num,style="%Y-%m-%d"):
         date_touple = time.localtime(rand_time)          
         re_time.append(time.strftime(style,date_touple))
     return re_time
+
 def add_row(df_temp,num):
+    
     index_1 = np.random.randint( low = 0,high = df_temp.shape[0]-1,size=num)
     return df_temp.loc[index_1]
 
 if __name__ == '__main__':
+
     path = 'D:\\code\\chapter4'
     data_path = os.path.join(path ,'data')
     file_name = 'german.csv'

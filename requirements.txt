@@ -1,0 +1,7 @@
+scikit-learn==0.21.3
+numpy==1.16.5
+pandas==0.25.1
+matplotlib==3.1.1
+imbalanced-learn==0.5.0
+pyfm==2016.2.10
+xgboost==0.90

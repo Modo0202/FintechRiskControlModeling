@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-第4章：数据清洗与预处理
-"""
+
 import os
 import pandas as pd
 import numpy as np
@@ -20,7 +18,7 @@ warnings.filterwarnings("ignore") ##忽略警告
 ##数据读取
 def data_read(data_path,file_name):
 
-    df = pd.read_csv(os.path.join(data_path, file_name), delim_whitespace = True, header = None )
+    df = pd.read_csv(os.path.join(data_path, file_name), delim_whitespace=True, header=None)
     ##变量重命名
     columns = ['status_account','duration','credit_history','purpose', 'amount',
                'svaing_account', 'present_emp', 'income_rate', 'personal_status',
@@ -47,7 +45,7 @@ def category_continue_separation(df,feature_names):
 def add_str(x):
 
     str_1 = ['%',' ','/t','$',';','@']
-    str_2 = str_1[np.random.randint( 0,high = len(str_1)-1 )]
+    str_2 = str_1[np.random.randint(0, high = len(str_1)-1)]
     return x+str_2
 
 def add_time(num,style="%Y-%m-%d"):
@@ -56,21 +54,21 @@ def add_time(num,style="%Y-%m-%d"):
     stop_time = time.mktime((2015,1,1,0,0,0,0,0,0) )  
     re_time = []
     for i in range(num):
-        rand_time = np.random.randint( start_time,stop_time)
+        rand_time = np.random.randint(start_time, stop_time)
         #将时间戳生成时间元组
         date_touple = time.localtime(rand_time)          
-        re_time.append(time.strftime(style,date_touple))
+        re_time.append(time.strftime(style, date_touple))
     return re_time
 
 def add_row(df_temp,num):
     
-    index_1 = np.random.randint( low = 0,high = df_temp.shape[0]-1,size=num)
+    index_1 = np.random.randint(low=0, high=df_temp.shape[0]-1, size=num)
     return df_temp.loc[index_1]
 
 if __name__ == '__main__':
 
-    path = 'D:\\code\\chapter4'
-    data_path = os.path.join(path ,'data')
+    path = os.getcwd() 
+    data_path = os.path.join(path,'data')
     file_name = 'german.csv'
     ##读取数据
     df = data_read(data_path,file_name)
@@ -144,22 +142,22 @@ if __name__ == '__main__':
     for j in range(1,len(numerical_var)+1):
         plt.subplot(2,4,j)
         df_temp = df[numerical_var[j-1]][~df[numerical_var[j-1]].isnull()]
-        plt.boxplot( df_temp,
-                    notch=False,  #中位线处不设置凹陷
-                    widths=0.2,   #设置箱体宽度
-                    medianprops={'color':'red'},  #中位线设置为红色
-                    boxprops=dict(color="blue"),  #箱体边框设置为蓝色
-                     labels=[numerical_var[j-1]],  #设置标签
-                    whiskerprops = {'color': "black"}, #设置须的颜色，黑色
-                    capprops = {'color': "green"},      #设置箱线图顶端和末端横线的属性，颜色为绿色
-                    flierprops={'color':'purple','markeredgecolor':"purple"} #异常值属性，这里没有异常值，所以没表现出来
-                   )
+        plt.boxplot(
+                df_temp,
+                notch=False,  #中位线处不设置凹陷
+                widths=0.2,   #设置箱体宽度
+                medianprops={'color':'red'},  #中位线设置为红色
+                boxprops=dict(color="blue"),  #箱体边框设置为蓝色
+                labels=[numerical_var[j-1]],  #设置标签
+                whiskerprops = {'color': "black"}, #设置须的颜色，黑色
+                capprops = {'color': "green"},      #设置箱线图顶端和末端横线的属性，颜色为绿色
+                flierprops={'color':'purple','markeredgecolor':"purple"} #异常值属性，这里没有异常值，所以没表现出来
+            )
     plt.show()
     
     ####查看数据分布
     ##连续变量不同类别下的分布
     for i in numerical_var:
-#        i = 'duration'
         ##取非缺失值的数据
         df_temp = df.loc[~df[i].isnull(),[i,'target']]
         df_good = df_temp[df_temp.target == 0]
@@ -176,7 +174,7 @@ if __name__ == '__main__':
         plt.hist(df_good[i],  bins =20, alpha=0.5,label='好样本')
         plt.hist(df_bad[i],  bins =20, alpha=0.5,label='坏样本')
         plt.ylabel(i,fontsize=fontsize_1)
-        plt.title( 'valid rate='+str(valid)+'%, Mean='+str(Mean) + ', Std='+str(Std)+', Max='+str(Max)+', Min='+str(Min))
+        plt.title('valid rate='+str(valid)+'%, Mean='+str(Mean) + ', Std='+str(Std)+', Max='+str(Max)+', Min='+str(Min))
         plt.legend()
         ##保存图片
         file = os.path.join(path,'plot_num', i+'.png')
@@ -185,7 +183,6 @@ if __name__ == '__main__':
         
     ##离散变量不同类别下的分布
     for i in categorical_var:
-#        i = 'status_account'
         ##非缺失值数据
         df_temp = df.loc[~df[i].isnull(),[i,'target']]
         df_bad = df_temp[df_temp.target == 1]
@@ -194,8 +191,7 @@ if __name__ == '__main__':
         bad_rate = []
         bin_rate = []
         var_name = []
-        for j in df[i].unique():
-            
+        for j in df[i].unique():      
             if pd.isnull(j):
                 df_1 = df[df[i].isnull()]
                 bad_rate.append(sum(df_1.target)/df_1.shape[0])
@@ -210,12 +206,12 @@ if __name__ == '__main__':
         ##绘图
         plt.figure(figsize=(10,6))
         fontsize_1 = 12
-        plt.bar(np.arange(1,df_2.shape[0]+1),df_2.bin_rate,0.1,color='black',alpha=0.5, label='占比')
-        plt.xticks(np.arange(1,df_2.shape[0]+1), df_2.var_name)
-        plt.plot( np.arange(1,df_2.shape[0]+1),df_2.bad_rate,  color='green', alpha=0.5,label='坏样本比率')
+        plt.bar(np.arange(1, df_2.shape[0]+1), df_2.bin_rate,0.1,color='black', alpha=0.5, label='占比')
+        plt.xticks(np.arange(1, df_2.shape[0]+1), df_2.var_name)
+        plt.plot(np.arange(1, df_2.shape[0]+1), df_2.bad_rate,  color='green', alpha=0.5, label='坏样本比率')
         
         plt.ylabel(i,fontsize=fontsize_1)
-        plt.title( 'valid rate='+str(valid)+'%')
+        plt.title('valid rate='+str(valid)+'%')
         plt.legend()
         ##保存图片
         file = os.path.join(path,'plot_cat', i+'.png')

@@ -5,3 +5,4 @@ matplotlib==3.1.1
 imbalanced-learn==0.5.0
 pyfm==2016.2.10
 xgboost==0.90
+missingno==0.4.2

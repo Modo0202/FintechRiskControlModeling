@@ -10,11 +10,13 @@ import pickle
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
+
 import warnings
 warnings.filterwarnings("ignore") ##忽略警告
-##注意sklearn版本要在v.20.0以上，不同版本函数的位置会不同。
+
+
 def data_read(data_path,file_name):
-    df = pd.read_csv( os.path.join(data_path, file_name), delim_whitespace = True, header = None )
+    df = pd.read_csv(os.path.join(data_path, file_name), delim_whitespace=True, header=None)
     ##变量重命名
     columns = ['status_account','duration','credit_history','purpose', 'amount',
                'svaing_account', 'present_emp', 'income_rate', 'personal_status',
@@ -27,6 +29,7 @@ def data_read(data_path,file_name):
       ##数据分为data_train和 data_test两部分，训练集用于得到编码函数，验证集用已知的编码规则对验证集编码
     data_train, data_test = train_test_split(df, test_size=0.2, random_state=0,stratify=df.target)
     return data_train, data_test
+
 ##one—hot编码
 def onehot_encode(df,data_path_1,flag='train'):
     df = df.reset_index(drop=True)
@@ -45,7 +48,7 @@ def onehot_encode(df,data_path_1,flag='train'):
     if flag == 'train':
         enc = OneHotEncoder(dtype='int').fit(df)
         ##保存编码模型
-        save_model = open(os.path.join(data_path_1 ,'onehot.pkl'), 'wb')
+        save_model = open(os.path.join(data_path_1, 'onehot.pkl'), 'wb')
         pickle.dump(enc, save_model, 0)
         save_model.close()
         df_return = pd.DataFrame( enc.transform(df).toarray())
@@ -53,7 +56,7 @@ def onehot_encode(df,data_path_1,flag='train'):
         
     elif flag =='test':
         ##测试数据编码
-        read_model = open(os.path.join(data_path_1 ,'onehot.pkl'),'rb')
+        read_model = open(os.path.join(data_path_1, 'onehot.pkl'), 'rb')
         onehot_model = pickle.load(read_model)
         read_model.close()
         ##如果训练集无缺失值，测试集有缺失值则将该样本删除
@@ -72,7 +75,7 @@ def onehot_encode(df,data_path_1,flag='train'):
             del_index = np.unique(del_index)
             df = df.drop(del_index)
             print('训练集无缺失值，但测试集有缺失值，第{0}条样本被删除'.format(del_index))
-        df_return = pd.DataFrame(onehot_model.transform( df).toarray())
+        df_return = pd.DataFrame(onehot_model.transform(df).toarray())
         df_return.columns = onehot_model.get_feature_names(df.columns)
         
     elif flag == 'transform':
@@ -81,15 +84,16 @@ def onehot_encode(df,data_path_1,flag='train'):
         onehot_model = pickle.load(read_model)
         read_model.close()
         ##逆变换
-        df_return = pd.DataFrame( onehot_model.inverse_transform(df) )
-        df_return.columns  = np.unique( ['_'.join(i.rsplit('_')[:-1] ) for i in df.columns])
+        df_return = pd.DataFrame(onehot_model.inverse_transform(df))
+        df_return.columns = np.unique(['_'.join(i.rsplit('_')[:-1]) for i in df.columns])
     return df_return
+
 ##标签编码
 def label_encode(df,data_path_1,flag='train'):
     if flag == 'train':
-        enc = LabelEncoder().fit( df )
+        enc = LabelEncoder().fit(df)
         ##保存编码模型
-        save_model = open(os.path.join(data_path_1 ,'labelcode.pkl'), 'wb')
+        save_model = open(os.path.join(data_path_1, 'labelcode.pkl'), 'wb')
         pickle.dump(enc, save_model, 0)
         save_model.close()
         df_return = pd.DataFrame( enc.transform(df))
@@ -97,22 +101,22 @@ def label_encode(df,data_path_1,flag='train'):
         
     elif flag =='test':
         ##测试数据编码
-        read_model = open(os.path.join(data_path_1 ,'labelcode.pkl'),'rb')
+        read_model = open(os.path.join(data_path_1, 'labelcode.pkl'), 'rb')
         label_model = pickle.load(read_model)
         read_model.close()
-        df_return = pd.DataFrame(label_model.transform( df))
+        df_return = pd.DataFrame(label_model.transform(df))
         df_return.name = df.name
 
     elif flag == 'transform':
         ##编码数据值转化为原始变量
-        read_model = open(os.path.join(data_path_1 ,'labelcode.pkl'),'rb')
+        read_model = open(os.path.join(data_path_1, 'labelcode.pkl'), 'rb')
         label_model = pickle.load(read_model)
         read_model.close()
         ##逆变换
-        df_return = pd.DataFrame( label_model.inverse_transform(df) )
+        df_return = pd.DataFrame(label_model.inverse_transform(df))
     return df_return
-##自定义映射
-def dict_encode(df,data_path_1):
+
+def dict_encode(df, data_path_1):
     ##自定义映射
     embarked_mapping = {}
     embarked_mapping['status_account'] = {'NA': 1, 'A14': 2, 'A11':3,'A12': 4,'A13':5}  
@@ -131,6 +135,7 @@ def dict_encode(df,data_path_1):
         df[col] = df[i].map(embarked_mapping[i])
         var_dictEncode.append(col)
     return df[var_dictEncode]
+    
 ##WOE编码
 def woe_cal_trans(x, y, target=1):
     ##计算总体的正负样本数
@@ -157,7 +162,7 @@ def woe_cal_trans(x, y, target=1):
     x_woe_trans.name = x.name + "_woe"
     return x_woe_trans, woe_map, iv_value
 
-def woe_encode(df,data_path_1,varnames, y, filename,flag='train'):
+def woe_encode(df, data_path_1, varnames, y, filename, flag='train'):
     """
     WOE编码映射
     ---------------------------------------
@@ -187,12 +192,12 @@ def woe_encode(df,data_path_1,varnames, y, filename,flag='train'):
         ##字符串类型的缺失值用NA填补
         if len(var_str) > 0:
             df.loc[:,var_str] = df[var_str].fillna('NA')
+            
     if flag == 'train':
         iv_values = {}
         woe_maps = {}
         var_woe_name = []
         for var in varnames:
-#            var = 'foreign_worker'
             x = df[var]
             ##变量映射
             x_woe_trans, woe_map, info_value = woe_cal_trans(x, y)
@@ -201,19 +206,20 @@ def woe_encode(df,data_path_1,varnames, y, filename,flag='train'):
             woe_maps[var] = woe_map
             iv_values[var] = info_value
         ##保存woe映射字典
-        save_woe_dict = open(os.path.join(data_path_1 ,filename+'.pkl'), 'wb')
+        save_woe_dict = open(os.path.join(data_path_1, filename + '.pkl'), 'wb')
         pickle.dump(woe_maps, save_woe_dict, 0)
         save_woe_dict.close()
-        return df, woe_maps, iv_values ,var_woe_name
+        return df, woe_maps, iv_values, var_woe_name
+        
     elif flag == 'test':
          ##测试数据编码
-         read_woe_dict = open(os.path.join(data_path_1 ,filename+'.pkl'),'rb')
+         read_woe_dict = open(os.path.join(data_path_1, filename + '.pkl'),'rb')
          woe_dict = pickle.load(read_woe_dict)
          read_woe_dict.close()
          ##如果训练集无缺失值，测试集有缺失值则将该样本删除
          woe_dict.keys()
          del_index = []
-         for key,value in woe_dict.items():
+         for key, value in woe_dict.items():
              if 'NA' not in value.keys() and 'NA' in df[key].unique():
                  index = np.where(df[key] == 'NA')
                  del_index.append(index)
@@ -234,31 +240,30 @@ def woe_encode(df,data_path_1,varnames, y, filename,flag='train'):
               var_woe_name.append(val_name)
          return df, var_woe_name
 
-
 if __name__ == '__main__':
     path = 'D:\\code\\chapter5\\'
-    data_path = os.path.join(path ,'data')
+    data_path = os.path.join(path, 'data')
     file_name = 'german.csv'
     ##读取数据
     data_train, data_test = data_read(data_path,file_name)
     ##不可排序变量
-    var_no_order = ['credit_history','purpose', 'personal_status', 'other_debtors',
-                  'inst_plans', 'housing', 'job','telephone', 'foreign_worker']
+    var_no_order = ['credit_history', 'purpose', 'personal_status', 'other_debtors',
+                    'inst_plans', 'housing', 'job', 'telephone', 'foreign_worker']
     ##one-hot编码
     ##训练数据编码
     data_train.credit_history[882] = np.nan
-    data_train_encode = onehot_encode(data_train[var_no_order],data_path,flag='train')
+    data_train_encode = onehot_encode(data_train[var_no_order], data_path, flag='train')
    
     ##测试集数据编码
     data_test.credit_history[529] = np.nan
     data_test.purpose[355] = np.nan
-    data_test_encode = onehot_encode(data_test[var_no_order],data_path,flag='test')
+    data_test_encode = onehot_encode(data_test[var_no_order], data_path, flag='test')
     ##查看编码逆变化后的原始变量名
     df_encoded = data_test_encode.loc[0:4]
-    data_inverse = onehot_encode(df_encoded,data_path,flag='transform')
+    data_inverse = onehot_encode(df_encoded, data_path, flag='transform')
     ##哑变量编码
-    data_train_dummies =  pd.get_dummies(data_train[var_no_order])
-    data_test_dummies =  pd.get_dummies(data_test[var_no_order])
+    data_train_dummies = pd.get_dummies(data_train[var_no_order])
+    data_test_dummies = pd.get_dummies(data_test[var_no_order])
     data_train_dummies.columns
     ##可排序变量
     ##注意，如果分类变量的标签为字符串，这是需要将字符串数值化才可以进行模型训练，标签编码其本质是为
@@ -286,9 +291,9 @@ if __name__ == '__main__':
 
     ##WOE编码
     ##训练集WOE编码
-    df_train_woe, dict_woe_map, dict_iv_values ,var_woe_name = woe_encode(data_train,data_path,var_no_order, data_train.target, 'dict_woe_map',flag='train')
+    df_train_woe, dict_woe_map, dict_iv_values, var_woe_name = woe_encode(data_train, data_path, var_no_order, data_train.target, 'dict_woe_map', flag='train')
     ##测试集WOE编码
-    df_test_woe, var_woe_name = woe_encode(data_test,data_path,var_no_order, data_train.target, 'dict_woe_map',flag='test')
+    df_test_woe, var_woe_name = woe_encode(data_test, data_path, var_no_order, data_train.target, 'dict_woe_map', flag='test')
 
 
 

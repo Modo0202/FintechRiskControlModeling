@@ -1,15 +1,20 @@
 # -*- coding: utf-8 -*-
 """
 第6章：变量分箱方法
-1:Chi-merge(卡方分箱), 2:IV(最优IV值分箱), 
-3:信息熵(基于树的分箱)
+1: Chi-merge(卡方分箱);
+2: IV(最优IV值分箱); 
+3: 信息熵(基于树的分箱);
 """
+
 import os
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
+
 import warnings
 warnings.filterwarnings("ignore") ##忽略警告
+
+
 def data_read(data_path,file_name):
     df = pd.read_csv( os.path.join(data_path, file_name), delim_whitespace = True, header = None )
     ##变量重命名
@@ -25,7 +30,7 @@ def data_read(data_path,file_name):
     data_train, data_test = train_test_split(df, test_size=0.2, random_state=0,stratify=df.target)
     return data_train, data_test
 
-def cal_advantage(temp, piont, method,flag='sel'):
+def cal_advantage(temp, piont, method, flag='sel'):
     """
     计算当前切分点下的指标值
     ##参数
@@ -46,8 +51,7 @@ def cal_advantage(temp, piont, method,flag='sel'):
             ##计算每个箱内的好坏样本书
             good_bad_matrix[ii][0] = df_temp_1['good'].sum()
             good_bad_matrix[ii][1] = df_temp_1['bad'].sum()
-            good_bad_matrix[ii][2] = df_temp_1['total'].sum()
-                    
+            good_bad_matrix[ii][2] = df_temp_1['total'].sum()              
     
     elif flag == 'gain':
        ##用于计算本次分箱后的指标结果，即分箱数，每增加一个，就要算一下当前分箱下的指标结果
@@ -146,7 +150,6 @@ def best_split(df_temp0, method, bin_num):
     newbinDS = pd.concat([newbinDS_0, newbinDS_1], axis=0)
     return newbinDS  
 
-
 def select_split_point(temp_bin, method):
     """
     二叉树分割方式，从候选者中挑选每次的最优切分点，与切分后的指标计算
@@ -192,7 +195,6 @@ def select_split_point(temp_bin, method):
     newBins = temp_main[binNum].drop('split', axis=1)
     return newBins.sort_values(by=['bin', 'bad_rate']), round( bin_i_value[0][1] ,4)
 
-
 def init_equal_bin(x,bin_rate):
     """
     初始化等距分组，cont_var_bin函数的中间过程函数
@@ -229,6 +231,7 @@ def init_equal_bin(x,bin_rate):
     result = pd.DataFrame({'bin_up':bin_up,'bin_low':bin_low})
     result.index.name = 'bin_num'
     return result
+
 def limit_min_sample(temp_cont,  bin_min_num_0):
     """
     分箱约束条件：每个箱内的样本数不能小于bin_min_num_0，cont_var_bin函数的中间过程函数
@@ -258,6 +261,7 @@ def limit_min_sample(temp_cont,  bin_min_num_0):
                 temp_cont.loc[ix, 'bin_up'] = rowdata['bin_up']
             temp_cont = temp_cont.drop(i, axis=0)  
     return temp_cont.sort_values(by='bad_rate')
+
 def cont_var_bin_map(x, bin_init):
     """
     按照初始化分箱结果，对原始值进行分箱映射
@@ -275,6 +279,7 @@ def cont_var_bin_map(x, bin_init):
             temp[index] = i
     temp.name = temp.name + "_BIN"
     return temp
+
 def merge_bin(sub, i):
     """
     将相同箱内的样本书合并，区间合并
@@ -445,7 +450,6 @@ def cal_bin_value(x, y, bin_min_num_0=10):
     df_temp = df_temp.reset_index(drop=True)
     return df_temp
 
-
 def disc_var_bin(x, y, method=1, mmin=3, mmax=8, stop_limit=0.1, bin_min_num = 20  ):
     """
     离散变量分箱方法，如果变量过于稀疏最好先编码在按连续变量分箱
@@ -524,7 +528,6 @@ def disc_var_bin(x, y, method=1, mmin=3, mmax=8, stop_limit=0.1, bin_min_num = 2
         del_key.append(x.name)
     return temp_cont.sort_values(by='bin') , gain_value_save0 , gain_rate_save0,del_key
 
-
 def disc_var_bin_map(x, bin_map):
     """
     用离散变量分箱后的结果，对原始值进行分箱映射
@@ -553,7 +556,6 @@ def disc_var_bin_map(x, bin_map):
         if len(index_1) > 0:
             new_x[pd.isnull(new_x)] = bin_map.loc[index_1,'bin'].tolist()
     new_x.name = x.name + '_BIN'
-
     return new_x
 
 if __name__ == '__main__':

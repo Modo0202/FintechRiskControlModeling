@@ -213,7 +213,7 @@ def woe_encode(df, data_path_1, varnames, y, filename, flag='train'):
         
     elif flag == 'test':
          ##测试数据编码
-         read_woe_dict = open(os.path.join(data_path_1, filename + '.pkl'),'rb')
+         read_woe_dict = open(os.path.join(data_path_1, filename + '.pkl'), 'rb')
          woe_dict = pickle.load(read_woe_dict)
          read_woe_dict.close()
          ##如果训练集无缺失值，测试集有缺失值则将该样本删除
@@ -258,13 +258,16 @@ if __name__ == '__main__':
     data_test.credit_history[529] = np.nan
     data_test.purpose[355] = np.nan
     data_test_encode = onehot_encode(data_test[var_no_order], data_path, flag='test')
+    
     ##查看编码逆变化后的原始变量名
     df_encoded = data_test_encode.loc[0:4]
     data_inverse = onehot_encode(df_encoded, data_path, flag='transform')
+    
     ##哑变量编码
     data_train_dummies = pd.get_dummies(data_train[var_no_order])
     data_test_dummies = pd.get_dummies(data_test[var_no_order])
     data_train_dummies.columns
+    
     ##可排序变量
     ##注意，如果分类变量的标签为字符串，这是需要将字符串数值化才可以进行模型训练，标签编码其本质是为
     ##标签变量数值化而提出的方法，因此，其值支持单列数据的转化操作，并且转化后的结果是无序的。
@@ -273,10 +276,10 @@ if __name__ == '__main__':
     
     ##标签编码
     ##训练数据编码
-    data_train_encode = label_encode(data_train[var_order[1]],data_path,flag='train')
+    data_train_encode = label_encode(data_train[var_order[1]], data_path, flag='train')
     ##验证集数据编码
-    data_test_encode = label_encode(data_test[var_order[1]],data_path,flag='test')
-    ##查看编码你变化后的原始变量名
+    data_test_encode = label_encode(data_test[var_order[1]], data_path, flag='test')
+    ##查看编码变化后的原始变量名
     ##后面再改一下
     df_encoded = data_test_encode
     data_inverse = label_encode(df_encoded,data_path,flag='transform')

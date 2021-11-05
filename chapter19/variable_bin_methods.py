@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 第6章：变量分箱方法
-1:Chi-merge(卡方分箱), 2:IV(最优IV值分箱), 
-3:信息熵(基于树的分箱)
+1:Chi-merge(卡方分箱), 2:IV(最优IV值分箱), 3:信息熵(基于树的分箱)
 """
 import os
 import sys

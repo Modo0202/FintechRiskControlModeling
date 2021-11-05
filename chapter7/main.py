@@ -6,23 +6,24 @@
 import os
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
-import variable_bin_methods as varbin_meth
-import variable_encode as var_encode
+import seaborn as sns
 import matplotlib
 import matplotlib.pyplot as plt
 matplotlib.use(arg='Qt5Agg')
 matplotlib.rcParams['font.sans-serif']=['SimHei']   
 matplotlib.rcParams['axes.unicode_minus']=False 
+from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression 
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.feature_selection import SelectKBest, f_classif
 from sklearn.feature_selection import RFECV
 from sklearn.svm import SVR
 from sklearn.feature_selection import SelectFromModel
-import seaborn as sns
 from sklearn.tree import DecisionTreeClassifier
 from feature_selector import FeatureSelector
+import variable_bin_methods as varbin_meth
+import variable_encode as var_encode
+
 import warnings
 warnings.filterwarnings("ignore") ##忽略警告
 ##数据读取
@@ -50,6 +51,7 @@ def category_continue_separation(df,feature_names):
     numerical_var = list(df[feature_names].select_dtypes(include=['int','float','int32','float32','int64','float64']).columns.values)
     categorical_var = [x for x in feature_names if x not in numerical_var]
     return categorical_var,numerical_var
+
 if __name__ == '__main__':
     path = 'D:\\code\\chapter7'
     data_path = os.path.join(path ,'data')
@@ -83,7 +85,7 @@ if __name__ == '__main__':
     dict_cont_bin = {}
     for i in numerical_var:
         print(i)
-        dict_cont_bin[i],gain_value_save , gain_rate_save = varbin_meth.cont_var_bin(data_train[i], data_train.target, method=2, mmin=3, mmax=12,
+        dict_cont_bin[i],gain_value_save, gain_rate_save = varbin_meth.cont_var_bin(data_train[i], data_train.target, method=2, mmin=3, mmax=12,
                                      bin_rate=0.01, stop_limit=0.05, bin_min_num=20)
     ###离散变量分箱
     dict_disc_bin = {}

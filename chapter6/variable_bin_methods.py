@@ -15,8 +15,25 @@ import warnings
 warnings.filterwarnings("ignore") ##忽略警告
 
 
-def data_read(data_path,file_name):
-    df = pd.read_csv( os.path.join(data_path, file_name), delim_whitespace = True, header = None )
+def data_read(data_path, file_name):
+    """
+    读取数据文件并划分训练集和测试集
+
+    Parameters
+    ----------
+    data_path : str
+        数据文件存储路径
+    file_name : str
+        数据文件名
+
+    Returns
+    -------
+    data_train : pandas.DataFrame
+        训练数据集
+    data_test : pandas.DataFrame
+        测试数据集.
+    """
+    df = pd.read_csv(os.path.join(data_path, file_name), delim_whitespace=True, header=None)
     ##变量重命名
     columns = ['status_account','duration','credit_history','purpose', 'amount',
                'svaing_account', 'present_emp', 'income_rate', 'personal_status',
@@ -24,9 +41,9 @@ def data_read(data_path,file_name):
                'inst_plans', 'housing', 'num_credits',
                'job', 'dependents', 'telephone', 'foreign_worker', 'target']
     df.columns = columns
-    ##将标签变量由状态1,2转为0,1;0表示好用户，1表示坏用户
+    ##将标签变量由状态1,2转为0,1；0表示好用户，1表示坏用户
     df.target = df.target - 1
-      ##数据分为data_train和 data_test两部分，训练集用于得到编码函数，验证集用已知的编码规则对验证集编码
+    ##数据分为data_train和 data_test两部分，训练集用于得到编码函数，验证集用已知的编码规则对验证集编码
     data_train, data_test = train_test_split(df, test_size=0.2, random_state=0, stratify=df.target)
     
     return data_train, data_test
@@ -34,10 +51,22 @@ def data_read(data_path,file_name):
 def cal_advantage(temp, piont, method, flag='sel'):
     """
     计算当前切分点下的指标值
-    ##参数
-    temp: 上一步的分箱结果，pandas dataframe
-    piont: 切分点，以此来划分分箱
-    method: 分箱方法选择，1:chi-merge, 2:IV值, 3:信息熵
+
+    Parameters
+    ----------
+    temp : pandas.DataFrame
+        上一步的分箱结果.
+    piont : TYPE
+        切分点，以此来划分分箱.
+    method : int
+       分箱方法选择，1:chi-merge, 2:IV值, 3:信息熵.
+    flag : str, optional
+        DESCRIPTION. The default is 'sel'.
+
+    Returns
+    -------
+    M_value : TYPE
+        DESCRIPTION.
     """
     if flag == 'sel':
         ##用于最优切分点选择，这里只是二叉树，即二分
@@ -184,7 +213,7 @@ def select_split_point(temp_bin, method):
     # binNum = temp_all_Vals['BinToSplit']
     binNum = bin_i_value[0][0]
     newBins = temp_main[binNum].drop('split', axis=1)
-    return newBins.sort_values(by=['bin', 'bad_rate']), round(bin_i_value[0][1], 4))
+    return newBins.sort_values(by=['bin', 'bad_rate']), round(bin_i_value[0][1], 4)
 
 def init_equal_bin(x, bin_rate):
     """
@@ -295,31 +324,46 @@ def merge_bin(sub, i):
     df.columns = ['bin', 'bin_low', 'bin_up', 'total']
     return df
 
-
 def cont_var_bin(x, y, method, mmin=5, mmax=10, bin_rate=0.01, stop_limit=0.1, bin_min_num=20):
     """
-    ##连续变量分箱函数
-    ##参数
-    x: 输入分箱数据，pandas series
-    y: 标签变量
-    method: 分箱方法选择，1:chi-merge, 2:IV值, 3:基尼系数分箱
-    mmin: 最小分箱数，当分箱初始化后如果初始化箱数小于等mmin，则mmin=2，即最少分2箱，如果分两箱也无法满足箱内最小样本数限制而分1箱，则变量删除
-    mmax: 最大分箱数，当分箱初始化后如果初始化箱数小于等于mmax，则mmax等于初始化箱数-1
-    bin_rate: 等距初始化分箱参数，分箱数为1/bin_rate,分箱间隔在数据中的最小值与最大值将等间隔取值
-    stop_limit: 分箱earlystopping机制，如果已经没有明显增益即停止分箱
-    bin_min_num: 每组最小样本数
-    ##返回值
-    分箱结果：pandas dataframe
+    连续变量分箱函数
+
+    Parameters
+    ----------
+    x : pandas.Series
+        输入分箱数据.
+    y : pandas.Series
+        标签变量.
+    method : int
+        分箱方法选择，1:chi-merge，2:IV值，3:基尼系数分箱.
+    mmin : int, optional
+        最小分箱数，当分箱初始化后如果初始化箱数小于等mmin，则mmin=2，即最少分2箱，如果分两箱也无法满足箱内最小样本数限制而分1箱，则变量删除. The default is 5.
+    mmax : int, optional
+        最大分箱数，当分箱初始化后如果初始化箱数小于等于mmax，则mmax等于初始化箱数-1. The default is 10.
+    bin_rate : float, optional
+        等距初始化分箱参数，分箱数为1/bin_rate,分箱间隔在数据中的最小值与最大值将等间隔取值. The default is 0.01.
+    stop_limit : TYPE, optional
+        分箱earlystopping机制，如果已经没有明显增益即停止分箱. The default is 0.1.
+    bin_min_num : int, optional
+        每组最小样本数. The default is 20.
+
+    Returns
+    -------
+    data : pandas.DataFrame
+        分箱结果.
+    gain_value_save0 : TYPE
+        DESCRIPTION.
+    gain_rate_save0 : TYPE
+        DESCRIPTION.
     """
     ##缺失值单独取出来
     df_na = pd.DataFrame({'x': x[pd.isnull(x)], 'y': y[pd.isnull(x)]})
     y = y[~pd.isnull(x)]
     x = x[~pd.isnull(x)]
-    ##初始化分箱，等距的方式，后面加上约束条件,没有箱内样本数没有限制
+    ##初始化分箱，等距的方式，后面加上约束条件，没有箱内样本数没有限制
     bin_init = init_equal_bin(x, bin_rate)
     ##分箱映射
     bin_map = cont_var_bin_map(x, bin_init)
-    
     df_temp = pd.concat([x, y, bin_map], axis=1)
     ##计算每个bin中好坏样本的频数
     df_temp_1 = pd.crosstab(index=df_temp[bin_map.name], columns=y)
@@ -549,10 +593,9 @@ def disc_var_bin_map(x, bin_map):
 
 if __name__ == '__main__':
     
-    path = 'D:/code/chapter6/'
-    data_path = os.path.join(path,'data')
+    # path = 'D:/code/chapter6/'
+    data_path = os.path.join(os.getcwd(), 'data')
     file_name = 'german.csv'
-    ##读取数据
     data_train, data_test = data_read(data_path,file_name)
     
     ##连续变量分箱
@@ -561,7 +604,7 @@ if __name__ == '__main__':
                              method=1, mmin=4, mmax=10, bin_rate=0.01, stop_limit=0.1, bin_min_num=20)
     
     data_test2, gain_value_save2, gain_rate_save2 = cont_var_bin(data_train.amount, data_train.target,
-                             method=2, mmin=4 ,mmax=10, bin_rate=0.01, stop_limit=0.1, bin_min_num=20)
+                             method=2, mmin=4, mmax=10, bin_rate=0.01, stop_limit=0.1, bin_min_num=20)
 
     data_test3, gain_value_save3, gain_rate_save3 = cont_var_bin(data_train.amount, data_train.target, 
                              method=3, mmin=4, mmax=10, bin_rate=0.01, stop_limit=0.1, bin_min_num=20)

@@ -19,8 +19,7 @@ p8
 I01
 sVdtype
 p9
-cnumpy
-float64
+Vint
 p10
 sVhandle_unknown
 p11
